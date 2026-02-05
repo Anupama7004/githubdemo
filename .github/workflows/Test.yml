@@ -1,18 +1,20 @@
+
 # .github/workflows/Test.yml
 name: ci-demo
- 
+
 on:
-push:
-branches: [ "main" ]
-pull_request:
-branches: [ "main" ]
- 
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
 jobs:
-build:
-runs-on: ubuntu-latest
-steps:
-- name: Checkout
-uses: actions/checkout@v4
- 
-- name: Sanity check
-run: echo “GitHub Actions working!”
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Sanity check
+        run: echo "GitHub Actions working!"
