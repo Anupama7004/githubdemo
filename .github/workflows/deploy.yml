@@ -1,58 +1,42 @@
-name: Deploy Using Self Hosted Runner (Windows)
+deploy:
+  needs: build
+  runs-on: [self-hosted, windows]
+  steps:
+    - name: Checkout code
+    uses: actions/checkout@v4
 
-on:
-  workflow_dispatch:
+    - name: Download artifact (corporate SSL safe)
+      uses: actions/download-artifact@v4
+      env:
+        NODE_TLS_REJECT_UNAUTHORIZED: '0'
+      with:
+        name: build-output
+        path: release
 
-jobs:
-  build:
-    runs-on: windows-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Verify release files (inline PowerShell, no .ps1 execution)
+      shell: pwsh
+      run: |
+        Write-Host "Listing release directory..."
+        if (Test-Path "release") {
+            Get-ChildItem -Recurse -Force release
+        } else {
+            Write-Error "Release folder missing!"
+        }
 
-      - name: Build application (example)
-        shell: powershell
-        run: |
-          New-Item -ItemType Directory -Force -Path release | Out-Null
-          "Hello World" | Set-Content -Path release/app.txt -Encoding UTF8
+    - name: Run deployment script (INLINE, no ps1 file)
+      shell: pwsh
+      run: |
+        Write-Host "=== Deployment Started ==="
+        
+        if (!(Test-Path "release")) {
+            Write-Error "Release folder missing — cannot deploy."
+            exit 1
+        }
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-output
-          path: release/
+        Write-Host "Creating deploy directory..."
+        New-Item -ItemType Directory -Force -Path "C:\deployed-app" | Out-Null
 
-  deploy:
-    needs: build
-    runs-on: [self-hosted, windows]
-    steps:
-      - name: Checkout (to get deploy.ps1)
-        uses: actions/checkout@v4
+        Write-Host "Copying files..."
+        Copy-Item -Path "release\*" -Destination "C:\deployed-app" -Recurse -Force
 
-      
-      - name: Download artifact (tolerate corporate SSL)
-        uses: actions/download-artifact@v4
-        env:
-         
-          NODE_TLS_REJECT_UNAUTHORIZED: '0'
-        with:
-          name: build-output
-          path: release
-
-      
-      - name: Verify release files (before deploy)
-        shell: powershell
-        run: |
-          Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
-          Write-Host "Listing the release directory and its contents..."
-          if (Test-Path -Path release) {
-            Get-ChildItem -Recurse -Force release | Format-Table FullName, Length, LastWriteTime -AutoSize
-          } else {
-            Write-Error "The 'release' directory does not exist. Artifact may not have downloaded correctly."
-          }
-
-      - name: Run deployment script
-        shell: powershell
-        run: |
-          Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
-          ./deploy.ps1
+        Write-Host "Deployment completed successfully!"
