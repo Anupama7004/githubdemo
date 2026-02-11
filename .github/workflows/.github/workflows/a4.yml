@@ -1,0 +1,11 @@
+name: A4-Minimal
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  demo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Say OK
+        run: echo "OK"
