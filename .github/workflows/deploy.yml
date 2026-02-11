@@ -1,0 +1,42 @@
+name: Deploy Using Self Hosted Runner (Windows)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build application (example)
+        run: |
+          mkdir release
+          echo "Hello World" > release/app.txt
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: release/
+
+  deploy:
+    needs: build
+    runs-on: [self-hosted, windows]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output
+          path: release
+
+      - name: Show downloaded files
+        run: Get-ChildItem -Recurse release/
+
+      - name: Run deployment script
+        shell: powershell
+        run: ./deploy.ps1

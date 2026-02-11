@@ -1,0 +1,10 @@
+Write-Host "=== Deployment Script Running on $env:COMPUTERNAME ==="
+
+Write-Host "Listing release folder:"
+Get-ChildItem -Path release
+
+Write-Host "Simulating deployment..."
+New-Item -ItemType Directory -Force -Path "C:\deployed-app" | Out-Null
+Copy-Item -Path release\* -Destination "C:\deployed-app" -Recurse -Force
+
+Write-Host "Deployment completed successfully!"
