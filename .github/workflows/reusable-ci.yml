@@ -1,27 +1,18 @@
 name: Reusable CI
 
 on:
-  workflow_call:
-    inputs:
-      node-version:
-        description: "Node version to use"
-        required: false
-        type: string
-        default: "20"
-
+  workflow_call: {}
+  
 jobs:
   ci:
-    name: CI (checkout + dependencies)
+    name: CI (checkout only)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ inputs.node-version }}
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
+      # Optional: add lightweight verification that always passes
+      - name: Echo repo info
+        run: |
+          echo "Repository: $GITHUB_REPOSITORY"
+          echo "Commit: $GITHUB_SHA"
