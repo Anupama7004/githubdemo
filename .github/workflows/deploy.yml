@@ -43,6 +43,7 @@ jobs:
       - name: Verify release files (before deploy)
         shell: powershell
         run: |
+          Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
           Write-Host "Listing the release directory and its contents..."
           if (Test-Path -Path release) {
             Get-ChildItem -Recurse -Force release | Format-Table FullName, Length, LastWriteTime -AutoSize
@@ -52,4 +53,6 @@ jobs:
 
       - name: Run deployment script
         shell: powershell
-        run: ./deploy.ps1
+        run: |
+          Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
+          ./deploy.ps1
