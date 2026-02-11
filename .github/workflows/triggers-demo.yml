@@ -2,10 +2,12 @@ name: Assignment 4 - Triggers Demo
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
 
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - main
 
   workflow_dispatch:
     inputs:
@@ -15,27 +17,27 @@ on:
         default: "manual trigger"
 
   schedule:
-    - cron: "0 18 * * *"  # 18:00 UTC daily (optional)
+    - cron: "0 18 * * *"   # runs at 6 PM UTC daily
 
 jobs:
   detect-trigger:
     runs-on: ubuntu-latest
     steps:
-      - name: Print which event fired
+      - name: Print event
         run: echo "Event: ${{ github.event_name }}"
 
       - name: On push
         if: ${{ github.event_name == 'push' }}
-        run: echo "Triggered by a PUSH to main."
+        run: echo "Triggered by PUSH to main"
 
       - name: On pull_request
         if: ${{ github.event_name == 'pull_request' }}
-        run: echo "Triggered by a PULL REQUEST."
+        run: echo "Triggered by a PULL REQUEST"
 
-      - name: On workflow_dispatch
+      - name: On manual dispatch
         if: ${{ github.event_name == 'workflow_dispatch' }}
         run: echo "Triggered MANUALLY. Reason: ${{ inputs.reason }}"
 
       - name: On schedule
         if: ${{ github.event_name == 'schedule' }}
-        run: echo "Triggered by the CRON SCHEDULE."
+        run: echo "Triggered by CRON schedule"
