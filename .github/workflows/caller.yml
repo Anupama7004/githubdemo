@@ -1,0 +1,17 @@
+name: Call Reusable CI
+
+on:
+  workflow_dispatch:
+    inputs:
+      node-version:
+        description: "Node version to pass to reusable workflow"
+        required: false
+        default: "20"
+
+jobs:
+  use-reusable:
+    uses: ./.github/workflows/reusable-ci.yml
+    with:
+      node-version: ${{ inputs.node-version }}
+    secrets:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
