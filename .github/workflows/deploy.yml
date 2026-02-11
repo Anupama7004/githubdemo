@@ -29,6 +29,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Corporate SSL-friendly artifact download (only this step relaxes TLS)
       - name: Download artifact (corporate SSL safe)
         uses: actions/download-artifact@v4
         env:
@@ -37,28 +38,23 @@ jobs:
           name: build-output
           path: release
 
-      - name: Verify release files (inline PowerShell)
-        shell: powershell
-        run: |
-          Write-Host "Listing release contents..."
-          if (Test-Path "release") {
-            Get-ChildItem -Recurse -Force release
-          } else {
-            Write-Error "Release folder does not exist!"
-          }
+      # IMPORTANT: use CMD as the shell; call PowerShell with ExecutionPolicy Bypass
+      - name: Verify release files (via cmd → PowerShell)
+        shell: cmd
+        run: >
+          powershell -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass
+          -Command "Write-Host 'Listing release contents...';
+          if (Test-Path 'release') { Get-ChildItem -Recurse -Force 'release' }
+          else { throw 'Release folder does not exist!' }"
 
-      - name: Deployment (inline PowerShell)
-        shell: powershell
-        run: |
-          Write-Host "=== Deploying on $env:COMPUTERNAME ==="
-
-          if (!(Test-Path "release")) {
-            Write-Error "Release folder missing — cannot deploy."
-            exit 1
-          }
-
-          $target = "C:\deployed-app"
-          New-Item -ItemType Directory -Force -Path $target | Out-Null
-          Copy-Item -Path "release\*" -Destination $target -Recurse -Force
-
-          Write-Host "Deployment completed successfully!"
+      - name: Deploy (via cmd → PowerShell)
+        shell: cmd
+        run: >
+          powershell -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass
+          -Command "$dest='C:\deployed-app';
+          if (!(Test-Path 'release')) { throw 'Release folder missing — cannot deploy.' };
+          Write-Host 'Creating destination:' $dest;
+          New-Item -ItemType Directory -Force -Path $dest | Out-Null;
+          Write-Host 'Copying files to' $dest '...';
+          Copy-Item -Path 'release\*' -Destination $dest -Recurse -Force;
+          Write-Host 'Deployment completed successfully!'"
