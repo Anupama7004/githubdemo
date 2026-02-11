@@ -1,42 +1,64 @@
-deploy:
-  needs: build
-  runs-on: [self-hosted, windows]
-  steps:
-    - name: Checkout code
-    uses: actions/checkout@v4
+name: Deploy Using Self Hosted Runner (Windows)
 
-    - name: Download artifact (corporate SSL safe)
-      uses: actions/download-artifact@v4
-      env:
-        NODE_TLS_REJECT_UNAUTHORIZED: '0'
-      with:
-        name: build-output
-        path: release
+on:
+  workflow_dispatch:
 
-    - name: Verify release files (inline PowerShell, no .ps1 execution)
-      shell: pwsh
-      run: |
-        Write-Host "Listing release directory..."
-        if (Test-Path "release") {
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build application (example)
+        shell: powershell
+        run: |
+          New-Item -ItemType Directory -Force -Path release | Out-Null
+          "Hello World" | Set-Content -Path release/app.txt -Encoding UTF8
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: release/
+
+  deploy:
+    needs: build
+    runs-on: [self-hosted, windows]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download artifact (corporate SSL safe)
+        uses: actions/download-artifact@v4
+        env:
+          NODE_TLS_REJECT_UNAUTHORIZED: '0'
+        with:
+          name: build-output
+          path: release
+
+      - name: Verify release files (inline PowerShell)
+        shell: powershell
+        run: |
+          Write-Host "Listing release contents..."
+          if (Test-Path "release") {
             Get-ChildItem -Recurse -Force release
-        } else {
-            Write-Error "Release folder missing!"
-        }
+          } else {
+            Write-Error "Release folder does not exist!"
+          }
 
-    - name: Run deployment script (INLINE, no ps1 file)
-      shell: pwsh
-      run: |
-        Write-Host "=== Deployment Started ==="
-        
-        if (!(Test-Path "release")) {
+      - name: Deployment (inline PowerShell)
+        shell: powershell
+        run: |
+          Write-Host "=== Deploying on $env:COMPUTERNAME ==="
+
+          if (!(Test-Path "release")) {
             Write-Error "Release folder missing — cannot deploy."
             exit 1
-        }
+          }
 
-        Write-Host "Creating deploy directory..."
-        New-Item -ItemType Directory -Force -Path "C:\deployed-app" | Out-Null
+          $target = "C:\deployed-app"
+          New-Item -ItemType Directory -Force -Path $target | Out-Null
+          Copy-Item -Path "release\*" -Destination $target -Recurse -Force
 
-        Write-Host "Copying files..."
-        Copy-Item -Path "release\*" -Destination "C:\deployed-app" -Recurse -Force
-
-        Write-Host "Deployment completed successfully!"
+          Write-Host "Deployment completed successfully!"
