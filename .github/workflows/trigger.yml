@@ -1,40 +1,34 @@
-name: Trigger Exploration Workflow
+name: Trigger Schedule Workflow
+
+
 
 on:
   push:
-    branches:
-      - main
+    branches:
+      - main
   pull_request:
-    branches:
-      - main
+    branches:
+      - main
   workflow_dispatch:
-    inputs:
-      reason:
-        description: "Why run this workflow?"
-        required: false
-        default: "manual trigger"
   schedule:
-    - cron: "35 10 * * *"  # 10:13 UTC daily ≈ 3:43 PM IST
+    - cron: "35 10 * * *"   # runs daily at midnight
+
+
 
 jobs:
   identify-trigger:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Always print event
-        run: echo "Event: ${{ github.event_name }}"
-
-      - name: Echo when PUSH
-        if: ${{ github.event_name == 'push' }}
-        run: echo "Workflow triggered by PUSH"
-
-      - name: Echo when PULL REQUEST
-        if: ${{ github.event_name == 'pull_request' }}
-        run: echo "Workflow triggered by PULL REQUEST"
-
-      - name: Echo when MANUAL
-        if: ${{ github.event_name == 'workflow_dispatch' }}
-        run: echo "Workflow triggered by MANUAL DISPATCH. Reason: ${{ inputs.reason }}"
-
-      - name: Echo when SCHEDULE
-        if: ${{ github.event_name == 'schedule' }}
-        run: echo "Workflow triggered by SCHEDULE (CRON)"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Echo trigger source
+        run: |
+          if [ "${{ github.event_name }}" == "push" ]; then
+            echo "Workflow triggered by PUSH"
+          elif [ "${{ github.event_name }}" == "pull_request" ]; then
+            echo "Workflow triggered by PULL REQUEST"
+          elif [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "Workflow triggered by MANUAL DISPATCH"
+          elif [ "${{ github.event_name }}" == "schedule" ]; then
+            echo "Workflow triggered by SCHEDULE (CRON)"
+          else
+            echo "Workflow triggered by another event"
+          fi
