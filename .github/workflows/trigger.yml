@@ -8,7 +8,7 @@ on:
   workflow_dispatch:                   # Manual run via UI/CLI/API
   schedule:
     # 5:30 PM IST == 12:00 UTC (GitHub cron uses UTC)
-    - cron: '0 12 * * *'
+    - cron: '30 14 * * *'
 
   # OPTIONAL: If you want to receive custom external events,
   # uncomment this and dispatch via API or another workflow.
