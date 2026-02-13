@@ -9,7 +9,7 @@ on:
       - main
   workflow_dispatch:
   schedule:
-    - cron: "35 10 * * *"   
+    - cron: "20 11 * * *"   
  
 jobs:
   identify-trigger:
