@@ -9,7 +9,7 @@ on:
       - main
   workflow_dispatch:
   schedule:
-    - cron: "00 10 * * *"  # runs every day at 10:00 UTC
+    - cron: "05 10 * * *"  # runs every day at 10:05 UTC
 
 jobs:
   identify-trigger:
