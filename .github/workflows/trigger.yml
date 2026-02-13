@@ -1,0 +1,44 @@
+name: Assignment 4 - Triggers Demo
+
+on:
+  push:
+    branches: [ main ]                 # Runs on pushes to main
+  pull_request:
+    branches: [ main ]                 # Runs on PRs targeting main
+  workflow_dispatch:                   # Manual run via UI/CLI/API
+  schedule:
+    # 5:30 PM IST == 12:00 UTC (GitHub cron uses UTC)
+    - cron: '0 12 * * *'
+
+  # OPTIONAL: If you want to receive custom external events,
+  # uncomment this and dispatch via API or another workflow.
+  # repository_dispatch:
+  #   types: [kick-off-reports, nightly-sync]
+
+jobs:
+  identify-trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print timestamps (UTC & runner local)
+        run: |
+          echo "Now (UTC):   $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
+          echo "Now (Local): $(date +"%Y-%m-%d %H:%M:%S %Z")"
+
+      - name: Detect trigger
+        run: |
+          echo "event_name=${{ github.event_name }}"
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "Workflow triggered by PUSH"
+          elif [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "Workflow triggered by PULL REQUEST"
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "Workflow triggered by MANUAL DISPATCH"
+          elif [ "${{ github.event_name }}" = "schedule" ]; then
+            echo "Workflow triggered by SCHEDULE (CRON in UTC)"
+          elif [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            echo "Workflow triggered by REPOSITORY DISPATCH"
+            echo "event_type=${{ github.event.action }}"
+            echo "payload=$(echo '${{ toJson(github.event.client_payload) }}')"
+          else
+            echo "Workflow triggered by another event"
+          fi
