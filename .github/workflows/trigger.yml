@@ -1,4 +1,4 @@
-name: Trigger Schedule Workflow
+name: Trigger Exploration Workflow
 
 on:
   push:
@@ -8,8 +8,13 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      reason:
+        description: "Why run this workflow?"
+        required: false
+        default: "manual trigger"
   schedule:
-    - cron: "30 10 * * *"   # 10:13 UTC daily (≈ 3:43 PM IST)
+    - cron: "35 10 * * *"  # 10:13 UTC daily ≈ 3:43 PM IST
 
 jobs:
   identify-trigger:
@@ -28,7 +33,7 @@ jobs:
 
       - name: Echo when MANUAL
         if: ${{ github.event_name == 'workflow_dispatch' }}
-        run: echo "Workflow triggered by MANUAL DISPATCH"
+        run: echo "Workflow triggered by MANUAL DISPATCH. Reason: ${{ inputs.reason }}"
 
       - name: Echo when SCHEDULE
         if: ${{ github.event_name == 'schedule' }}
